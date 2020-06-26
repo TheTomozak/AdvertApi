@@ -1,4 +1,5 @@
 using AdvertApi.Models;
+using AdvertApi.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,7 @@ namespace AdvertApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddScoped<IDbAdvertApiService, EfSqlAdvertApiService>();
             services.AddDbContext<AdvertApiContext>(options => { options.UseSqlServer(Configuration.GetConnectionString("DbContext")); });
             services.AddControllers().AddNewtonsoftJson(options =>
             {
