@@ -15,6 +15,7 @@ namespace AdvertApi.Services
 
         public string Login(LoginRequest request);
 
+        public string RefreshToken(string refreshToken);
 
     }
 }

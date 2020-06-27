@@ -2,6 +2,7 @@
 using AdvertApi.Exceptions;
 using AdvertApi.Models;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -113,20 +114,69 @@ namespace AdvertApi.Services
 
             var refreshToken = Guid.NewGuid();
 
-            var client = new Client { 
-                RefreshToken = refreshToken.ToString()
-            };
 
-            _context.Attach(client);
-            _context.Entry(client).Property("RefreshToken").IsModified = true;
+            userInfo.RefreshToken = refreshToken.ToString();
+           // var client = new Client { 
+           //     RefreshToken = refreshToken.ToString()
+           // };
+           //  _context.Attach(client);
+           // _context.Entry(client).Property("RefreshToken").IsModified = true;
             _context.SaveChangesAsync();
 
-            
 
             var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
 
 
             return $"\"accesToken\": \"{accessToken}\",\n\"refreshToken\": \"{refreshToken}\"" ;
+
+        }
+
+
+        public string RefreshToken(string refreshToken)
+        {
+
+            var userInfo = _context.Clients.Where(m => m.RefreshToken == refreshToken).FirstOrDefault();
+
+            if(userInfo == null)
+            {
+                throw new WrongRefreshTokenException("Wrong refresh token");
+            }
+
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, userInfo.IdClient.ToString()),
+                new Claim(ClaimTypes.Name, userInfo.Login)
+
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["SecretKey"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken
+                (
+                    issuer: "https://localhost:44376/api/client",
+                    claims: claims,
+                    expires: DateTime.Now.AddMinutes(10),
+                    signingCredentials: creds
+                );
+
+            var refToken = Guid.NewGuid();
+
+
+            userInfo.RefreshToken = refToken.ToString();
+            //var client = new Client
+            //{
+            //    RefreshToken = refToken.ToString()
+            //};
+            //_context.Attach(client);
+            //_context.Entry(client).Property("RefreshToken").IsModified = true;
+
+            _context.SaveChangesAsync();
+
+            var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
+
+
+            return $"\"accesToken\": \"{accessToken}\",\n\"refreshToken\": \"{refToken}\"";
 
         }
 
@@ -158,6 +208,6 @@ namespace AdvertApi.Services
 
         }
 
-       
+      
     }
 }

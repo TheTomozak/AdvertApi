@@ -65,6 +65,20 @@ namespace AdvertApi.Controllers
 
         }
 
+        [HttpGet("refreshToken/{token}")]
+        public IActionResult RefreshToken(string token)
+        {
+            try
+            {
+                var result = _context.RefreshToken(token);
+                return Ok(result);
+            }
+            catch (WrongRefreshTokenException exc)
+            {
+                return BadRequest(exc.Message);
+            }
+           
+        }
 
     }
 
