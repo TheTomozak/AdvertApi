@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using AdvertApi.DTOs.Requests;
 using AdvertApi.Exceptions;
 using AdvertApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.Web.CodeGeneration.Contracts.Messaging;
@@ -78,6 +79,14 @@ namespace AdvertApi.Controllers
                 return BadRequest(exc.Message);
             }
            
+        }
+
+        [HttpGet("listOfCampaign")]
+        [Authorize]
+        public IActionResult ListOfCampaign()
+        {
+            var result = _context.ListOfCampaigns();
+            return Ok(result);
         }
 
     }

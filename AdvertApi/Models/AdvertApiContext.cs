@@ -20,6 +20,7 @@ namespace AdvertApi.Models
         public DbSet<Banner> Banners { get; set; }
         public DbSet<Building> Buildings { get; set; }
         public DbSet<Client> Clients { get; set; }
+        public DbSet<Campaign> Campaigns { get; set; }
 
 
 

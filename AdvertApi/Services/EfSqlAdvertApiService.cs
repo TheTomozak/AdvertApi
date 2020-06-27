@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -180,6 +181,12 @@ namespace AdvertApi.Services
 
         }
 
+        public IEnumerable<Campaign> ListOfCampaigns()
+        {
+            var campaign = _context.Campaigns.OrderByDescending(m=>m.StartDate).Include(m => m.Client).Include(m => m.Banners).ToList();
+
+            return campaign;
+        }
 
 
         public static string Create(string value, string salt)

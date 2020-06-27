@@ -17,5 +17,7 @@ namespace AdvertApi.Services
 
         public string RefreshToken(string refreshToken);
 
+        public IEnumerable<Campaign> ListOfCampaigns();
+
     }
 }
