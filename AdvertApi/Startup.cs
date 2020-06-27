@@ -1,13 +1,16 @@
 using AdvertApi.Models;
 using AdvertApi.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
+using System.Text;
 
 namespace AdvertApi
 {
@@ -23,6 +26,24 @@ namespace AdvertApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+
+                    options.TokenValidationParameters = new
+                    TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidIssuer = "https://localhost:44376/api/client",
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["SecretKey"]))
+                    };
+
+                });
+
+
             services.AddScoped<IDbAdvertApiService, EfSqlAdvertApiService>();
             services.AddDbContext<AdvertApiContext>(options => { options.UseSqlServer(Configuration.GetConnectionString("DbContext")); });
             services.AddControllers().AddNewtonsoftJson(options =>

@@ -2,6 +2,7 @@
 using AdvertApi.Models;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -11,6 +12,9 @@ namespace AdvertApi.Services
     {
 
         public Client RegisterClient(RegisterClientRequest request);
+
+        public string Login(LoginRequest request);
+
 
     }
 }

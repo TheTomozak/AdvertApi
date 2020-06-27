@@ -2,12 +2,14 @@
 using AdvertApi.Exceptions;
 using AdvertApi.Models;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using System;
-using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace AdvertApi.Services
 {
@@ -16,10 +18,11 @@ namespace AdvertApi.Services
 
 
         private readonly AdvertApiContext _context;
-
-        public EfSqlAdvertApiService(AdvertApiContext context)
+        private readonly IConfiguration Configuration;
+        public EfSqlAdvertApiService(AdvertApiContext context, IConfiguration configuration)
         {
             _context = context;
+            Configuration = configuration;
         }
 
 
@@ -34,14 +37,14 @@ namespace AdvertApi.Services
 
             if(isClientInDatabase != null)
             {
-                throw new ClientIsAlreadyInDatabase("Client is already in databse");
+                throw new ClientIsAlreadyInDatabaseException("Client is already in databse");
             }
 
             var isLoginInUse = _context.Clients.Count(m => m.Login == request.Login);
 
             if(isLoginInUse !=0)
             {
-                throw new UserWithThisLoginAlreadyExists("Login is already use by another user, please change login name");
+                throw new UserWithThisLoginAlreadyExistsException("Login is already use by another user, please change login name");
             }
 
             string salt = CreateSalt();
@@ -69,6 +72,63 @@ namespace AdvertApi.Services
 
         }
 
+
+        public string Login(LoginRequest request)
+        {
+
+            var userInfo = _context.Clients.Where(m => m.Login == request.Login).FirstOrDefault();
+
+            if(userInfo == null)
+            {
+                throw new LoginIsIncorrectException("Login is incorrect");
+            }
+
+          
+
+            if (!Validate(request.Password, userInfo.Salt, userInfo.Password))
+            {
+                throw new PasswordIsIncorrectException("Password is incorrect");
+            }
+
+
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, userInfo.IdClient.ToString()),
+                new Claim(ClaimTypes.Name, userInfo.Login)
+
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["SecretKey"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken
+                (
+                    issuer: "https://localhost:44376/api/client",
+                    claims: claims,
+                    expires: DateTime.Now.AddMinutes(10),
+                    signingCredentials: creds
+                );
+
+
+
+            var refreshToken = Guid.NewGuid();
+
+            var client = new Client { 
+                RefreshToken = refreshToken.ToString()
+            };
+
+            _context.Attach(client);
+            _context.Entry(client).Property("RefreshToken").IsModified = true;
+            _context.SaveChangesAsync();
+
+            
+
+            var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
+
+
+            return $"\"accesToken\": \"{accessToken}\",\n\"refreshToken\": \"{refreshToken}\"" ;
+
+        }
 
 
 

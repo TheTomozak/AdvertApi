@@ -36,16 +36,38 @@ namespace AdvertApi.Controllers
                 var result = _context.RegisterClient(request);
                 return Ok(result);
             }
-            catch (ClientIsAlreadyInDatabase exc)
+            catch (ClientIsAlreadyInDatabaseException exc)
             {
                 return BadRequest(exc.Message);
             }
-            catch(UserWithThisLoginAlreadyExists exc)
+            catch(UserWithThisLoginAlreadyExistsException exc)
             {
                 return BadRequest(exc.Message);
             }
 
 
         }
+
+        [HttpPost("login")]
+        public IActionResult LoginClient(LoginRequest request)
+        {
+            try
+            {
+                var result = _context.Login(request);
+                return Ok(result);
+            }catch(LoginIsIncorrectException exc)
+            {
+                return BadRequest(exc.Message);
+            }catch(PasswordIsIncorrectException exc)
+            {
+                return BadRequest(exc.Message);
+            }
+
+        }
+
+
     }
+
+
+
 }

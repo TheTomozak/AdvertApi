@@ -69,6 +69,7 @@ namespace AdvertApi.Models
                 opt.Property(m => m.Login).HasMaxLength(100).IsRequired();
                 opt.Property(m => m.Password).HasMaxLength(100).IsRequired();
                 opt.Property(m => m.Salt).HasMaxLength(200).IsRequired();
+                opt.Property(m => m.RefreshToken).HasMaxLength(300);
 
 
             });
