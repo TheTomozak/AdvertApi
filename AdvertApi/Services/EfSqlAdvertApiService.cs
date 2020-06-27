@@ -188,6 +188,48 @@ namespace AdvertApi.Services
             return campaign;
         }
 
+        public Campaign CreateNewCampaign(CreateNewCampaignRequest request)
+        {
+
+            var clientInfo = _context.Clients.Where(m => m.IdClient == request.IdClient).FirstOrDefault();
+
+            if(clientInfo == null)
+            {
+                throw new ClientNotExistsException($"Client with id={request.IdClient} not exists");
+            }
+
+            var fromBuildingStreet = _context.Buildings.Where(m => m.IdBuilding == request.FromIdBuilding).FirstOrDefault();
+            var toBuildingStreet = _context.Buildings.Where(m => m.IdBuilding == request.ToIdBuilding).FirstOrDefault();
+
+            if (!((toBuildingStreet.Street).Equals(fromBuildingStreet.Street)))
+            {
+                throw new BuildingAreNotOnTheSameStreet($"Buildings aren't on the same street, addresses you gave: {request.FromIdBuilding} and {request.ToIdBuilding}");
+            }
+
+
+            var campaing = new Campaign {
+
+
+                IdClient = request.IdClient,
+                StartDate = request.StartDate,
+                EndDate = request.EndDate,
+                PricePerSquareMeter = request.PricePerSquareMeter,
+                FromIdBuilding = request.FromIdBuilding,
+                ToIdBuilding = request.ToIdBuilding
+            };
+
+
+
+            _context.Attach(campaing);
+            _context.Add(campaing);
+            _context.SaveChanges();
+
+
+            return campaing;
+
+
+        }
+
 
         public static string Create(string value, string salt)
         {
@@ -215,6 +257,6 @@ namespace AdvertApi.Services
 
         }
 
-      
+       
     }
 }

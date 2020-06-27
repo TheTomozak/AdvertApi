@@ -89,6 +89,26 @@ namespace AdvertApi.Controllers
             return Ok(result);
         }
 
+        [HttpPost]
+        public IActionResult CreateNewCampaings(CreateNewCampaignRequest request)
+        {
+
+            try
+            {
+                var result = _context.CreateNewCampaign(request);
+                return Ok(result);
+            }
+            catch (ClientNotExistsException exc)
+            {
+                return BadRequest(exc.Message);
+            }
+            catch(BuildingAreNotOnTheSameStreet exc)
+            {
+                return BadRequest(exc.Message);
+            }
+           
+        }
+
     }
 
 

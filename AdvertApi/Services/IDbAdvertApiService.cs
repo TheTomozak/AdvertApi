@@ -19,5 +19,7 @@ namespace AdvertApi.Services
 
         public IEnumerable<Campaign> ListOfCampaigns();
 
+        public Campaign CreateNewCampaign(CreateNewCampaignRequest request);
+
     }
 }
