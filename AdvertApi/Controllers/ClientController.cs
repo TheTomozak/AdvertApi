@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using AdvertApi.DTOs.Requests;
 using AdvertApi.Exceptions;
@@ -36,6 +37,10 @@ namespace AdvertApi.Controllers
                 return Ok(result);
             }
             catch (ClientIsAlreadyInDatabase exc)
+            {
+                return BadRequest(exc.Message);
+            }
+            catch(UserWithThisLoginAlreadyExists exc)
             {
                 return BadRequest(exc.Message);
             }

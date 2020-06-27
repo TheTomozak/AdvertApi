@@ -37,6 +37,13 @@ namespace AdvertApi.Services
                 throw new ClientIsAlreadyInDatabase("Client is already in databse");
             }
 
+            var isLoginInUse = _context.Clients.Count(m => m.Login == request.Login);
+
+            if(isLoginInUse !=0)
+            {
+                throw new UserWithThisLoginAlreadyExists("Login is already use by another user, please change login name");
+            }
+
             string salt = CreateSalt();
             string hashPassword = Create(request.Password, salt);
 
